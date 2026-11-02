@@ -21,5 +21,6 @@
     "test": {
       "dependsOn": ["^test"]
     }
-  }
+  },
+  "globalPassThroughEnv": ["ENABLE_EXPERIMENTAL_COREPACK", "VERCEL", "VERCEL_ENV", "VERCEL_URL"]
 }
