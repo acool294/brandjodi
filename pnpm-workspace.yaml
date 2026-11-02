@@ -1,0 +1,11 @@
+packages:
+  - "apps/*"
+  - "packages/*"
+
+# React Native's Metro bundler works best with a flat node_modules.
+nodeLinker: hoisted
+
+allowBuilds:
+  supabase: true
+  sharp: false
+  unrs-resolver: false

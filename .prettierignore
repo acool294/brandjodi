@@ -1,0 +1,7 @@
+pnpm-lock.yaml
+.next
+.expo
+.turbo
+node_modules
+packages/shared/src/database.types.ts
+supabase/migrations

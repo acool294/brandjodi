@@ -1,0 +1,30 @@
+{
+  "name": "brandjodi",
+  "private": true,
+  "description": "BrandJodi: creator x brand marketplace (POC monorepo)",
+  "packageManager": "pnpm@11.28.9",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "dev": "turbo run dev",
+    "dev:web": "pnpm --filter @brandjodi/web dev",
+    "dev:mobile": "pnpm --filter @brandjodi/mobile start",
+    "build": "turbo run build",
+    "lint": "turbo run lint",
+    "typecheck": "turbo run typecheck",
+    "test": "turbo run test",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "db:types": "supabase gen types typescript --linked --schema public > packages/shared/src/database.types.ts",
+    "db:push": "supabase db push",
+    "db:reset": "supabase db reset",
+    "test:db": "node supabase/tests/run-pglite.mjs"
+  },
+  "devDependencies": {
+    "prettier": "^3.6.2",
+    "supabase": "^2.40.0",
+    "turbo": "^2.11.10",
+    "@electric-sql/pglite": "^0.3.0"
+  }
+}
