@@ -22,7 +22,9 @@ all migrations applied. Steps below are for a fresh project.
    members of your Supabase org. For testers outside the team, add custom SMTP with a free
    **Resend** account (Authentication → SMTP settings). Until then, use the demo password accounts
    from `pnpm --filter @brandjodi/web seed:demo`.
-7. Free projects pause after a week without use; open the dashboard to resume.
+7. **POC: email + password sign-up.** Authentication → Sign In / Providers → Email: switch **off**
+   "Confirm email" so new accounts can sign in straight away without an email round-trip.
+8. Free projects pause after a week without use; open the dashboard to resume.
 
 ## Google sign-in
 

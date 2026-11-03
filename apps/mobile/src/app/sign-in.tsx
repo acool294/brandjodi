@@ -2,26 +2,28 @@ import * as Linking from "expo-linking";
 import * as WebBrowser from "expo-web-browser";
 import { useState } from "react";
 import { KeyboardAvoidingView, Platform, View } from "react-native";
-import { Body, Button, ErrorText, Input, Screen, Title } from "@/components/ui";
+import { Body, Button, Chip, ErrorText, Input, Row, Screen, Title } from "@/components/ui";
 import { env } from "@/lib/env";
 import { supabase } from "@/lib/supabase";
 import { colors, spacing } from "@/theme";
 
 WebBrowser.maybeCompleteAuthSession();
 
-type Step = "email" | "code" | "password";
+type Mode = "signin" | "signup" | "code" | "code-verify";
 
 export default function SignInScreen() {
-  const [step, setStep] = useState<Step>("email");
+  const [mode, setMode] = useState<Mode>(env.enablePasswordLogin ? "signin" : "code");
   const [email, setEmail] = useState("");
-  const [code, setCode] = useState("");
   const [password, setPassword] = useState("");
+  const [code, setCode] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [notice, setNotice] = useState<string | null>(null);
 
   async function run(fn: () => Promise<void>) {
     setBusy(true);
     setError(null);
+    setNotice(null);
     try {
       await fn();
     } catch (e) {
@@ -31,30 +33,34 @@ export default function SignInScreen() {
     }
   }
 
-  const sendCode = () =>
+  // A successful sign-in updates the session; the root layout then shows onboarding or the tabs.
+  const submit = () =>
     run(async () => {
-      const { error } = await supabase.auth.signInWithOtp({
-        email: email.trim(),
-        options: { shouldCreateUser: true },
-      });
-      if (error) throw error;
-      setStep("code");
-    });
-
-  const verify = () =>
-    run(async () => {
-      const { error } = await supabase.auth.verifyOtp({
-        email: email.trim(),
-        token: code.trim(),
-        type: "email",
-      });
-      if (error) throw error;
-    });
-
-  const passwordSignIn = () =>
-    run(async () => {
-      const { error } = await supabase.auth.signInWithPassword({ email: email.trim(), password });
-      if (error) throw error;
+      const address = email.trim();
+      if (mode === "signin") {
+        const { error } = await supabase.auth.signInWithPassword({ email: address, password });
+        if (error) throw error;
+      } else if (mode === "signup") {
+        if (password.length < 8) throw new Error("Password must be at least 8 characters");
+        const { data, error } = await supabase.auth.signUp({ email: address, password });
+        if (error) throw error;
+        if (!data.session)
+          setNotice("Account created. Check your email to confirm it, then sign in.");
+      } else if (mode === "code") {
+        const { error } = await supabase.auth.signInWithOtp({
+          email: address,
+          options: { shouldCreateUser: true },
+        });
+        if (error) throw error;
+        setMode("code-verify");
+      } else {
+        const { error } = await supabase.auth.verifyOtp({
+          email: address,
+          token: code.trim(),
+          type: "email",
+        });
+        if (error) throw error;
+      }
     });
 
   // Google via Supabase OAuth (PKCE): open the browser, then exchange the returned code for a session.
@@ -73,6 +79,13 @@ export default function SignInScreen() {
       const { error: exErr } = await supabase.auth.exchangeCodeForSession(authCode);
       if (exErr) throw exErr;
     });
+
+  const label = {
+    signin: "Sign in",
+    signup: "Create account",
+    code: "Email me a code",
+    "code-verify": "Verify and continue",
+  }[mode];
 
   return (
     <KeyboardAvoidingView
@@ -97,7 +110,16 @@ export default function SignInScreen() {
           </Body>
         </View>
 
-        <Button title="Continue with Google" variant="outline" onPress={google} disabled={busy} />
+        {env.enablePasswordLogin && (mode === "signin" || mode === "signup") && (
+          <Row>
+            <Chip label="Sign in" selected={mode === "signin"} onPress={() => setMode("signin")} />
+            <Chip
+              label="Create account"
+              selected={mode === "signup"}
+              onPress={() => setMode("signup")}
+            />
+          </Row>
+        )}
 
         <Input
           label="Email"
@@ -106,9 +128,19 @@ export default function SignInScreen() {
           autoCapitalize="none"
           autoComplete="email"
           keyboardType="email-address"
-          editable={step !== "code"}
+          editable={mode !== "code-verify"}
         />
-        {step === "code" && (
+        {(mode === "signin" || mode === "signup") && (
+          <Input
+            label="Password"
+            hint={mode === "signup" ? "At least 8 characters." : undefined}
+            value={password}
+            onChangeText={setPassword}
+            secureTextEntry
+            autoComplete={mode === "signup" ? "new-password" : "current-password"}
+          />
+        )}
+        {mode === "code-verify" && (
           <Input
             label="6-digit code"
             hint={`We emailed a code to ${email}`}
@@ -118,30 +150,26 @@ export default function SignInScreen() {
             autoComplete="one-time-code"
           />
         )}
-        {step === "password" && (
-          <Input label="Password" value={password} onChangeText={setPassword} secureTextEntry />
-        )}
         <ErrorText message={error} />
-        <Button
-          title={
-            step === "email"
-              ? "Email me a code"
-              : step === "code"
-                ? "Verify and continue"
-                : "Sign in"
-          }
-          onPress={step === "email" ? sendCode : step === "code" ? verify : passwordSignIn}
-          loading={busy}
-          disabled={!email}
-        />
-        {step !== "email" && (
-          <Button title="Use a different method" variant="ghost" onPress={() => setStep("email")} />
+        {notice && <Body style={{ color: colors.success }}>{notice}</Body>}
+        <Button title={label} onPress={submit} loading={busy} disabled={!email} />
+
+        {env.enableGoogleLogin && (
+          <Button title="Continue with Google" variant="outline" onPress={google} disabled={busy} />
         )}
-        {env.enablePasswordLogin && step === "email" && (
+        {mode === "code" || mode === "code-verify" ? (
+          env.enablePasswordLogin && (
+            <Button
+              title="Use email and password instead"
+              variant="ghost"
+              onPress={() => setMode("signin")}
+            />
+          )
+        ) : (
           <Button
-            title="Use a password (demo accounts)"
+            title="Email me a sign-in code instead"
             variant="ghost"
-            onPress={() => setStep("password")}
+            onPress={() => setMode("code")}
           />
         )}
         <Body muted style={{ fontSize: 12, textAlign: "center" }}>

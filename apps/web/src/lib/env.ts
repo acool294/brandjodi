@@ -8,9 +8,13 @@ const schema = z.object({
   NEXT_PUBLIC_APP_URL: z.preprocess(clean, z.url().default("http://localhost:3000")),
   NEXT_PUBLIC_SUPABASE_URL: z.preprocess(clean, z.url()),
   NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: z.preprocess(clean, z.string().min(20)),
-  NEXT_PUBLIC_ENABLE_PASSWORD_LOGIN: z
+  // Off until Google is enabled in Supabase -> Authentication -> Sign In / Providers.
+  NEXT_PUBLIC_ENABLE_GOOGLE_LOGIN: z
     .preprocess(clean, z.string().optional())
     .transform((v) => ["true", "1", "yes"].includes((v ?? "").toLowerCase())),
+  NEXT_PUBLIC_ENABLE_PASSWORD_LOGIN: z
+    .preprocess(clean, z.string().optional())
+    .transform((v) => !["false", "0", "no"].includes((v ?? "true").toLowerCase())),
 });
 
 /** Public env vars are inlined at build time, so each must be referenced literally. */
@@ -21,6 +25,7 @@ const result = schema.safeParse({
   NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY:
     process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY ?? process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
   NEXT_PUBLIC_ENABLE_PASSWORD_LOGIN: process.env.NEXT_PUBLIC_ENABLE_PASSWORD_LOGIN,
+  NEXT_PUBLIC_ENABLE_GOOGLE_LOGIN: process.env.NEXT_PUBLIC_ENABLE_GOOGLE_LOGIN,
 });
 
 export const envProblems = result.success
@@ -44,5 +49,6 @@ export const env = result.success
       NEXT_PUBLIC_APP_URL: "http://localhost:3000",
       NEXT_PUBLIC_SUPABASE_URL: "https://missing-env.invalid",
       NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: "missing",
-      NEXT_PUBLIC_ENABLE_PASSWORD_LOGIN: false,
+      NEXT_PUBLIC_ENABLE_PASSWORD_LOGIN: true,
+      NEXT_PUBLIC_ENABLE_GOOGLE_LOGIN: false,
     };

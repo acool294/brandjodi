@@ -11,5 +11,8 @@ export const env = {
     process.env.EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY,
   ),
   apiUrl: (process.env.EXPO_PUBLIC_API_URL ?? "http://localhost:3000").replace(/\/$/, ""),
-  enablePasswordLogin: process.env.EXPO_PUBLIC_ENABLE_PASSWORD_LOGIN === "true",
+  /** Email + password sign-in and sign-up; on unless set to "false". */
+  enablePasswordLogin: process.env.EXPO_PUBLIC_ENABLE_PASSWORD_LOGIN !== "false",
+  /** Off until Google is enabled in Supabase -> Authentication -> Providers. */
+  enableGoogleLogin: process.env.EXPO_PUBLIC_ENABLE_GOOGLE_LOGIN === "true",
 };

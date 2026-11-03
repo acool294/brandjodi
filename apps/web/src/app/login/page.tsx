@@ -25,7 +25,11 @@ export default async function LoginPage({ searchParams }: PageProps<"/login">) {
             Sign-in failed. Please try again.
           </p>
         )}
-        <LoginForm nextPath={nextPath} allowPassword={env.NEXT_PUBLIC_ENABLE_PASSWORD_LOGIN} />
+        <LoginForm
+          nextPath={nextPath}
+          allowPassword={env.NEXT_PUBLIC_ENABLE_PASSWORD_LOGIN}
+          allowGoogle={env.NEXT_PUBLIC_ENABLE_GOOGLE_LOGIN}
+        />
       </div>
     </main>
   );
