@@ -1,4 +1,5 @@
 import "server-only";
+import { cache } from "react";
 import { createClient as createSupabaseClient, type SupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "@brandjodi/shared";
 import { env } from "@/lib/env";
@@ -13,15 +14,18 @@ export interface Actor {
   ip: string | undefined;
 }
 
-/** The signed-in user on the web (session cookie). */
-export async function getWebActor(): Promise<Actor | null> {
+/**
+ * The signed-in user on the web (session cookie). getClaims() verifies the JWT locally with the
+ * project's public signing key, so it doesn't make a round trip to Supabase Auth on every request.
+ * Cached per request, so the layout and the page share one check.
+ */
+export const getWebActor = cache(async (): Promise<Actor | null> => {
   const db = await createClient();
-  const {
-    data: { user },
-  } = await db.auth.getUser();
-  if (!user) return null;
-  return { userId: user.id, email: user.email, db, ip: undefined };
-}
+  const { data } = await db.auth.getClaims();
+  const claims = data?.claims;
+  if (!claims?.sub) return null;
+  return { userId: claims.sub, email: claims.email as string | undefined, db, ip: undefined };
+});
 
 export async function requireWebActor(): Promise<Actor> {
   const actor = await getWebActor();
@@ -49,10 +53,8 @@ export async function requireApiActor(request: Request): Promise<Actor> {
       auth: { persistSession: false, autoRefreshToken: false },
     },
   );
-  const {
-    data: { user },
-    error,
-  } = await db.auth.getUser(token);
-  if (error || !user) throw new DomainError("not_signed_in", undefined, 401);
-  return { userId: user.id, email: user.email, db, ip };
+  const { data, error } = await db.auth.getClaims(token);
+  const claims = data?.claims;
+  if (error || !claims?.sub) throw new DomainError("not_signed_in", undefined, 401);
+  return { userId: claims.sub, email: claims.email as string | undefined, db, ip };
 }

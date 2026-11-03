@@ -8,7 +8,7 @@ request gets a preview URL.
 - Import the GitHub repo, **Root Directory = `apps/web`** (framework: Next.js, detected).
 - Install/build commands: leave the defaults. Vercel installs from the repo root because it detects the
   pnpm workspace.
-- Function region: Mumbai (`bom1`), next to the Supabase project.
+- Function region: Mumbai (`bom1`), next to the Supabase project. Set in `apps/web/vercel.json`; a US region adds ~250 ms to every database call.
 
 ## Environment variables (Production and Preview)
 
