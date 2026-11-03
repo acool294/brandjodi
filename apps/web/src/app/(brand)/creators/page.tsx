@@ -1,12 +1,15 @@
 import type { Metadata } from "next";
-import Link from "next/link";
+import { BadgeCheck, Star } from "lucide-react";
 import { CATEGORIES, formatINR, labelFor } from "@brandjodi/shared";
 import { PageHeader } from "@/components/app-shell";
 import { Pill } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, EmptyState } from "@/components/ui/card";
+import { Avatar, Card, EmptyState } from "@/components/ui/card";
+import { CreatorQuickView } from "@/components/creator-quick-view";
 import { Input, Select } from "@/components/ui/input";
 import { getBrandSession } from "@/server/session";
+
+const compact = new Intl.NumberFormat("en-IN", { notation: "compact", maximumFractionDigits: 1 });
 
 export const metadata: Metadata = { title: "Find creators" };
 
@@ -41,7 +44,7 @@ export default async function CreatorsPage({ searchParams }: PageProps<"/creator
   return (
     <>
       <PageHeader title="Find creators" subtitle="Search the BrandJodi creator network." />
-      <form className="mb-6 grid gap-3 rounded-xl border bg-card p-4 sm:grid-cols-6">
+      <form className="mb-6 grid gap-3 rounded-2xl border bg-card p-4 shadow-soft sm:grid-cols-6">
         <Input
           name="q"
           placeholder="Name or @username"
@@ -80,34 +83,45 @@ export default async function CreatorsPage({ searchParams }: PageProps<"/creator
       ) : (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {creators.map((c) => (
-            <Link key={c.username} href={`/c/${c.username}`} target="_blank">
-              <Card className="h-full space-y-2 transition hover:border-primary">
-                <div className="flex items-center justify-between">
-                  <p className="font-semibold">{c.display_name}</p>
+            <CreatorQuickView key={c.username} username={c.username} className="group">
+              <Card className="h-full space-y-3 transition group-hover:-translate-y-0.5 group-hover:border-primary/40">
+                <div className="flex items-center gap-3">
+                  <Avatar name={c.display_name} className="size-12" />
+                  <div className="min-w-0 flex-1">
+                    <p className="flex items-center gap-1 truncate font-bold">
+                      {c.display_name}
+                      {c.metrics_verified && <BadgeCheck className="size-4 shrink-0 text-accent" />}
+                    </p>
+                    <p className="truncate text-xs text-muted-foreground">
+                      @{c.username}
+                      {c.city && ` · ${c.city}`}
+                    </p>
+                  </div>
                   {c.rating_avg && (
-                    <span className="text-sm">
-                      {c.rating_avg} ★{" "}
-                      <span className="text-muted-foreground">({c.rating_count})</span>
+                    <span className="flex items-center gap-1 rounded-full bg-warning/10 px-2 py-0.5 text-xs font-semibold text-warning">
+                      <Star className="size-3 fill-current" /> {Number(c.rating_avg).toFixed(1)}
                     </span>
                   )}
                 </div>
-                <p className="text-sm text-muted-foreground">
-                  @{c.username}
-                  {c.city && ` · ${c.city}`}
-                </p>
                 <div className="flex flex-wrap gap-1">
                   {(c.categories as string[]).map((cat) => (
                     <Pill key={cat}>{labelFor(cat)}</Pill>
                   ))}
                 </div>
-                <p className="text-sm">
-                  {c.instagram_followers != null
-                    ? `${c.instagram_followers.toLocaleString("en-IN")} followers${c.metrics_verified ? " ✓" : " (unverified)"}`
-                    : "No social stats"}
-                  {c.starting_price != null && ` · from ${formatINR(c.starting_price)}`}
-                </p>
+                <div className="flex items-center justify-between border-t pt-3 text-sm">
+                  <span className="text-muted-foreground">
+                    {c.instagram_followers != null
+                      ? `${compact.format(c.instagram_followers)} followers`
+                      : "No social stats"}
+                  </span>
+                  {c.starting_price != null && (
+                    <span className="font-semibold text-primary">
+                      from {formatINR(c.starting_price)}
+                    </span>
+                  )}
+                </div>
               </Card>
-            </Link>
+            </CreatorQuickView>
           ))}
         </div>
       )}

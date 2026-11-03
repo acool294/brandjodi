@@ -11,6 +11,7 @@ import {
   createCampaign,
   createFundingOrder,
   createOrganisation,
+  getCreatorDetails,
   respondToOffer,
   reviewSubmission,
   sendOffer,
@@ -166,4 +167,15 @@ export async function submitReviewAction(_: ActionState, fd: FormData): Promise<
     ok: true,
     message: "Thanks! Your review is shown once the creator reviews too, or after 14 days.",
   };
+}
+
+export async function getCreatorDetailsAction(username: string) {
+  try {
+    return {
+      ok: true as const,
+      creator: await getCreatorDetails(await requireWebActor(), username),
+    };
+  } catch (e) {
+    return toActionError(e);
+  }
 }

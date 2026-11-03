@@ -3,39 +3,29 @@
 import { useState, useTransition } from "react";
 import {
   CATEGORIES,
-  DELIVERABLE_FORMATS,
   USAGE_RIGHTS_CHANNELS,
   computeFees,
   formatINR,
   labelFor,
   type CampaignInput,
-  type DeliverableInput,
   type FeeSettings,
 } from "@brandjodi/shared";
 import { createCampaignAction } from "@/actions/brand";
+import { DeliverablesPicker, selectionToDeliverables, type Selection } from "./deliverables-picker";
 import { Button } from "@/components/ui/button";
 import { Card, CardTitle } from "@/components/ui/card";
 import { Field, Input, Select, Textarea } from "@/components/ui/input";
-
-const emptyDeliverable: DeliverableInput = {
-  kind: "ugc_asset",
-  platform: "instagram",
-  format: "reel",
-  quantity: 1,
-};
 
 export function CampaignForm({ fees }: { fees: FeeSettings }) {
   const [pending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
   const [budget, setBudget] = useState(5000);
-  const [deliverables, setDeliverables] = useState<DeliverableInput[]>([emptyDeliverable]);
+  const [selection, setSelection] = useState<Selection>({
+    reel: { quantity: 1, kind: "ugc_asset", specs: "" },
+  });
   const [channels, setChannels] = useState<string[]>(["organic_social"]);
 
   const breakdown = computeFees(Math.max(0, Math.round(budget * 100)), fees);
-
-  function updateDeliverable(i: number, patch: Partial<DeliverableInput>) {
-    setDeliverables((list) => list.map((d, j) => (j === i ? { ...d, ...patch } : d)));
-  }
 
   function submit(form: HTMLFormElement, publish: boolean) {
     const fd = new FormData(form);
@@ -59,7 +49,7 @@ export function CampaignForm({ fees }: { fees: FeeSettings }) {
       exclusivity_days: Number(s("exclusivity_days")),
       disclosure_required: true,
       product_info: s("product_info") || undefined,
-      deliverables,
+      deliverables: selectionToDeliverables(selection),
     };
     setError(null);
     startTransition(async () => {
@@ -117,85 +107,14 @@ export function CampaignForm({ fees }: { fees: FeeSettings }) {
         </Card>
 
         <Card className="space-y-4">
-          <div className="flex items-center justify-between">
-            <CardTitle>Deliverables</CardTitle>
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              onClick={() => setDeliverables((l) => [...l, emptyDeliverable])}
-            >
-              Add deliverable
-            </Button>
+          <div>
+            <CardTitle>What do you need?</CardTitle>
+            <p className="mt-1 text-sm text-muted-foreground">
+              Pick formats and quantities per creator. &ldquo;Posted by creator&rdquo; content
+              always carries an #ad / paid partnership label (ASCI guidelines).
+            </p>
           </div>
-          {deliverables.map((d, i) => (
-            <div
-              key={i}
-              className="grid gap-3 rounded-lg border p-3 sm:grid-cols-[1.3fr_1fr_1fr_80px_auto]"
-            >
-              <Select
-                aria-label="Type"
-                value={d.kind}
-                onChange={(e) =>
-                  updateDeliverable(i, { kind: e.target.value as DeliverableInput["kind"] })
-                }
-              >
-                <option value="ugc_asset">UGC (files to the brand)</option>
-                <option value="influencer_post">Post on creator&apos;s account</option>
-              </Select>
-              <Select
-                aria-label="Platform"
-                value={d.platform}
-                onChange={(e) =>
-                  updateDeliverable(i, { platform: e.target.value as DeliverableInput["platform"] })
-                }
-              >
-                <option value="instagram">Instagram</option>
-                <option value="youtube">YouTube</option>
-                <option value="none">No platform</option>
-              </Select>
-              <Select
-                aria-label="Format"
-                value={d.format}
-                onChange={(e) =>
-                  updateDeliverable(i, { format: e.target.value as DeliverableInput["format"] })
-                }
-              >
-                {DELIVERABLE_FORMATS.map((f) => (
-                  <option key={f} value={f}>
-                    {labelFor(f)}
-                  </option>
-                ))}
-              </Select>
-              <Input
-                aria-label="Quantity"
-                type="number"
-                min={1}
-                max={20}
-                value={d.quantity}
-                onChange={(e) => updateDeliverable(i, { quantity: Number(e.target.value) })}
-              />
-              <Button
-                type="button"
-                variant="ghost"
-                size="sm"
-                disabled={deliverables.length === 1}
-                onClick={() => setDeliverables((l) => l.filter((_, j) => j !== i))}
-              >
-                Remove
-              </Button>
-              <Input
-                className="sm:col-span-5"
-                placeholder="Specs: length, aspect ratio, hooks, hashtags…"
-                value={d.specs ?? ""}
-                onChange={(e) => updateDeliverable(i, { specs: e.target.value })}
-              />
-            </div>
-          ))}
-          <p className="text-xs text-muted-foreground">
-            Posts on the creator&apos;s account always carry an #ad / paid partnership label (ASCI
-            guidelines).
-          </p>
+          <DeliverablesPicker value={selection} onChange={setSelection} />
         </Card>
 
         <Card className="space-y-4">

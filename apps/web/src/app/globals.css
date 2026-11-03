@@ -1,32 +1,37 @@
 @import "tailwindcss";
 
+/* BrandJodi design tokens: warm pink to violet, soft surfaces, generous radius. */
 :root {
-  --background: #fafaf9;
-  --foreground: #1c1917;
+  --background: #f7f6fb;
+  --foreground: #17122b;
   --card: #ffffff;
-  --muted: #f5f5f4;
-  --muted-foreground: #78716c;
-  --border: #e7e5e4;
-  --primary: #be185d;
+  --muted: #f1eff8;
+  --muted-foreground: #6b6586;
+  --border: #e6e2f1;
+  --primary: #e11d74;
   --primary-foreground: #ffffff;
-  --success: #15803d;
-  --warning: #b45309;
-  --danger: #b91c1c;
+  --accent: #7c3aed;
+  --success: #059669;
+  --warning: #d97706;
+  --danger: #dc2626;
+  --brand-gradient: linear-gradient(135deg, #ff3d8b 0%, #c026d3 50%, #7c3aed 100%);
+  --brand-gradient-soft: linear-gradient(135deg, #fff0f6 0%, #f8ecff 55%, #efeaff 100%);
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #0c0a09;
-    --foreground: #f5f5f4;
-    --card: #1c1917;
-    --muted: #292524;
-    --muted-foreground: #a8a29e;
-    --border: #3a3532;
-    --primary: #ec4899;
-    --primary-foreground: #ffffff;
-    --success: #4ade80;
+    --background: #0d0a18;
+    --foreground: #f4f1ff;
+    --card: #17122b;
+    --muted: #221b3b;
+    --muted-foreground: #a59fc2;
+    --border: #2e2650;
+    --primary: #ff4d97;
+    --accent: #a78bfa;
+    --success: #34d399;
     --warning: #fbbf24;
     --danger: #f87171;
+    --brand-gradient-soft: linear-gradient(135deg, #2a1230 0%, #1f1338 55%, #18143a 100%);
   }
 }
 
@@ -39,10 +44,12 @@
   --color-border: var(--border);
   --color-primary: var(--primary);
   --color-primary-foreground: var(--primary-foreground);
+  --color-accent: var(--accent);
   --color-success: var(--success);
   --color-warning: var(--warning);
   --color-danger: var(--danger);
   --font-sans: var(--font-geist-sans);
+  --font-display: var(--font-jakarta);
   --font-mono: var(--font-geist-mono);
 }
 
@@ -53,4 +60,31 @@ body {
 
 * {
   border-color: var(--border);
+}
+
+h1,
+h2,
+h3 {
+  font-family: var(--font-jakarta), var(--font-geist-sans), sans-serif;
+  letter-spacing: -0.02em;
+}
+
+@utility bg-brand-gradient {
+  background-image: var(--brand-gradient);
+}
+
+@utility bg-brand-soft {
+  background-image: var(--brand-gradient-soft);
+}
+
+@utility text-brand-gradient {
+  background-image: var(--brand-gradient);
+  background-clip: text;
+  color: transparent;
+}
+
+@utility shadow-soft {
+  box-shadow:
+    0 1px 2px rgb(23 18 43 / 0.04),
+    0 8px 24px -12px rgb(76 29 149 / 0.18);
 }

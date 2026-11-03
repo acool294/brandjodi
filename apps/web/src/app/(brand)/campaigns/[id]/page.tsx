@@ -6,7 +6,8 @@ import { setApplicationStatusAction, setCampaignStatusAction } from "@/actions/b
 import { ActionButton } from "@/components/action-button";
 import { PageHeader } from "@/components/app-shell";
 import { Pill, StatusBadge } from "@/components/ui/badge";
-import { Card, CardTitle } from "@/components/ui/card";
+import { Avatar, Card, CardTitle } from "@/components/ui/card";
+import { CreatorQuickView } from "@/components/creator-quick-view";
 import { formatDate } from "@/lib/utils";
 import { getBrandSession } from "@/server/session";
 
@@ -83,7 +84,7 @@ export default async function CampaignPage({ params }: PageProps<"/campaigns/[id
             (col.statuses as readonly string[]).includes(a.status),
           );
           return (
-            <div key={col.key} className="rounded-xl bg-muted/60 p-3">
+            <div key={col.key} className="rounded-2xl bg-brand-soft p-3">
               <p className="mb-3 text-sm font-semibold">
                 {col.title} <span className="text-muted-foreground">({items.length})</span>
               </p>
@@ -99,22 +100,31 @@ export default async function CampaignPage({ params }: PageProps<"/campaigns/[id
                   };
                   return (
                     <Card key={a.id} className="space-y-2 p-3">
-                      <Link
-                        href={`/campaigns/${id}/applications/${a.id}`}
-                        className="font-medium hover:underline"
-                      >
-                        {cp.display_name}
-                      </Link>
-                      <p className="text-xs text-muted-foreground">
-                        @{cp.username}
-                        {cp.city && ` · ${cp.city}`}
-                        {cp.instagram_followers != null &&
-                          ` · ${cp.instagram_followers.toLocaleString("en-IN")} followers${cp.metrics_verified ? "" : " (unverified)"}`}
-                      </p>
+                      <CreatorQuickView username={cp.username}>
+                        <span className="flex items-center gap-2">
+                          <Avatar name={cp.display_name} className="size-8 text-xs" />
+                          <span className="min-w-0">
+                            <span className="block truncate text-sm font-semibold hover:text-primary">
+                              {cp.display_name}
+                            </span>
+                            <span className="block truncate text-xs text-muted-foreground">
+                              @{cp.username}
+                              {cp.instagram_followers != null &&
+                                ` · ${cp.instagram_followers.toLocaleString("en-IN")}${cp.metrics_verified ? "" : "*"}`}
+                            </span>
+                          </span>
+                        </span>
+                      </CreatorQuickView>
                       <p className="text-sm">
                         {formatINR(a.quoted_price)} · {a.delivery_days} days
                       </p>
                       <p className="line-clamp-3 text-xs text-muted-foreground">{a.pitch}</p>
+                      <Link
+                        href={`/campaigns/${id}/applications/${a.id}`}
+                        className="block text-xs font-semibold text-primary hover:underline"
+                      >
+                        Open application, offer and chat →
+                      </Link>
                       {a.status === "submitted" && (
                         <div className="flex gap-2">
                           <ActionButton

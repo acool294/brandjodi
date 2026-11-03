@@ -1,11 +1,17 @@
 import Link from "next/link";
+import { BadgeCheck, LogOut } from "lucide-react";
+import { AppNav } from "./app-nav";
+import { Avatar } from "./ui/card";
 
-const NAV = [
-  { href: "/dashboard", label: "Dashboard" },
-  { href: "/campaigns", label: "Campaigns" },
-  { href: "/creators", label: "Find creators" },
-  { href: "/contracts", label: "Contracts" },
-];
+export function Logo({ className }: { className?: string }) {
+  return (
+    <span
+      className={`font-[family-name:var(--font-jakarta)] text-xl font-extrabold tracking-tight ${className ?? ""}`}
+    >
+      Brand<span className="text-brand-gradient">Jodi</span>
+    </span>
+  );
+}
 
 export function AppShell({
   orgName,
@@ -19,44 +25,45 @@ export function AppShell({
   children: React.ReactNode;
 }) {
   return (
-    <div className="flex min-h-full flex-1 flex-col">
-      <header className="border-b bg-card">
-        <div className="mx-auto flex w-full max-w-6xl flex-wrap items-center gap-x-6 gap-y-2 px-6 py-3">
-          <Link href="/dashboard" className="text-lg font-bold">
-            Brand<span className="text-primary">Jodi</span>
+    <div className="flex min-h-full flex-1 flex-col lg:flex-row">
+      <aside className="border-b bg-card/80 backdrop-blur lg:sticky lg:top-0 lg:h-screen lg:w-64 lg:shrink-0 lg:border-b-0 lg:border-r">
+        <div className="flex items-center justify-between gap-4 px-4 py-3 lg:flex-col lg:items-stretch lg:gap-6 lg:px-4 lg:py-6">
+          <Link href="/dashboard" className="px-2">
+            <Logo />
           </Link>
-          <nav className="flex flex-1 flex-wrap gap-1 text-sm">
-            {NAV.map((n) => (
-              <Link key={n.href} href={n.href} className="rounded-md px-3 py-1.5 hover:bg-muted">
-                {n.label}
-              </Link>
-            ))}
-            {isAdmin && (
-              <Link href="/admin" className="rounded-md px-3 py-1.5 text-primary hover:bg-muted">
-                Admin
-              </Link>
-            )}
-          </nav>
-          <div className="flex items-center gap-3 text-sm">
+          <div className="hidden flex-1 lg:block">
+            <AppNav isAdmin={isAdmin} />
+          </div>
+          <div className="flex items-center gap-3 lg:rounded-2xl lg:bg-brand-soft lg:p-3">
             {orgName && (
-              <span className="text-muted-foreground">
-                {orgName}
-                {verified && (
-                  <span className="ml-1 text-success" title="Verified brand">
-                    ✓
-                  </span>
-                )}
-              </span>
+              <>
+                <Avatar name={orgName} className="size-9" />
+                <div className="hidden min-w-0 flex-1 lg:block">
+                  <p className="flex items-center gap-1 truncate text-sm font-semibold">
+                    {orgName}
+                    {verified && (
+                      <BadgeCheck className="size-4 text-accent" aria-label="Verified brand" />
+                    )}
+                  </p>
+                  <p className="text-xs text-muted-foreground">Brand account</p>
+                </div>
+              </>
             )}
             <form action="/auth/signout" method="post">
-              <button className="rounded-md px-2 py-1 text-muted-foreground hover:bg-muted">
-                Sign out
+              <button
+                className="rounded-lg p-2 text-muted-foreground hover:bg-card hover:text-foreground"
+                title="Sign out"
+              >
+                <LogOut className="size-4" />
               </button>
             </form>
           </div>
         </div>
-      </header>
-      <main className="mx-auto w-full max-w-6xl flex-1 px-6 py-8">{children}</main>
+        <div className="px-4 pb-3 lg:hidden">
+          <AppNav isAdmin={isAdmin} />
+        </div>
+      </aside>
+      <main className="mx-auto w-full max-w-6xl flex-1 px-4 py-6 sm:px-8 lg:py-10">{children}</main>
     </div>
   );
 }
@@ -71,9 +78,9 @@ export function PageHeader({
   actions?: React.ReactNode;
 }) {
   return (
-    <div className="mb-6 flex flex-wrap items-end justify-between gap-4">
+    <div className="mb-8 flex flex-wrap items-end justify-between gap-4">
       <div>
-        <h1 className="text-2xl font-bold">{title}</h1>
+        <h1 className="text-2xl font-extrabold sm:text-3xl">{title}</h1>
         {subtitle && <p className="mt-1 text-sm text-muted-foreground">{subtitle}</p>}
       </div>
       {actions}

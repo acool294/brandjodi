@@ -35,7 +35,7 @@ export default async function CampaignsPage() {
           Create your first brief. It takes about five minutes.
         </EmptyState>
       ) : (
-        <div className="overflow-x-auto rounded-xl border bg-card">
+        <div className="overflow-x-auto rounded-2xl border bg-card shadow-soft">
           <table className="w-full text-sm">
             <thead className="border-b text-left text-muted-foreground">
               <tr>

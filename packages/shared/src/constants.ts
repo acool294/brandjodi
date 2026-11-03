@@ -122,6 +122,12 @@ export const BUCKETS = {
 export const MAX_UPLOAD_BYTES = 50 * 1024 * 1024;
 
 export const STATUS_LABELS: Record<string, string> = {
+  ugc: "UGC",
+  ugc_asset: "UGC",
+  yt_integration: "YouTube integration",
+  photo_set: "Photo set",
+  organic_social: "Organic social",
+  paid_ads: "Paid ads",
   draft: "Draft",
   published: "Live",
   paused: "Paused",
