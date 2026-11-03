@@ -21,12 +21,26 @@ const result = schema.safeParse({
   NEXT_PUBLIC_ENABLE_PASSWORD_LOGIN: process.env.NEXT_PUBLIC_ENABLE_PASSWORD_LOGIN,
 });
 
+export const envProblems = result.success
+  ? []
+  : result.error.issues.map((i) => `${i.path.join(".")} (${i.message})`);
+
+const message =
+  `Missing or invalid environment variables: ${envProblems.join(", ")}. ` +
+  "Set them in apps/web/.env.local, or in Vercel -> Settings -> Environment Variables and redeploy.";
+
+// Don't fail `next build` (the deployment would never go live); warn loudly instead and fail on use.
+// /api/health reports the problem on the deployed site.
 if (!result.success) {
-  const problems = result.error.issues.map((i) => `${i.path.join(".")} (${i.message})`).join(", ");
-  throw new Error(
-    `Missing or invalid environment variables: ${problems}. ` +
-      "Set them in apps/web/.env.local, or in Vercel -> Settings -> Environment Variables and redeploy.",
-  );
+  if (process.env.NEXT_PHASE === "phase-production-build") console.warn(`\n⚠ ${message}\n`);
+  else console.error(message);
 }
 
-export const env = result.data;
+export const env = result.success
+  ? result.data
+  : {
+      NEXT_PUBLIC_APP_URL: "http://localhost:3000",
+      NEXT_PUBLIC_SUPABASE_URL: "https://missing-env.invalid",
+      NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: "missing",
+      NEXT_PUBLIC_ENABLE_PASSWORD_LOGIN: false,
+    };
