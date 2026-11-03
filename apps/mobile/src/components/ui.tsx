@@ -14,7 +14,8 @@ import {
   type ViewProps,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { colors, radius, spacing } from "@/theme";
+import { LinearGradient } from "expo-linear-gradient";
+import { colors, gradient, radius, shadow, spacing } from "@/theme";
 
 export function Screen({
   children,
@@ -64,41 +65,100 @@ export function Button({
   loading?: boolean;
 }) {
   const isDisabled = disabled || loading;
+  const filled = variant === "primary" || variant === "danger";
+  const label = loading ? (
+    <ActivityIndicator color={filled ? "#fff" : colors.text} />
+  ) : (
+    <Text
+      style={[
+        styles.buttonText,
+        { color: filled ? colors.primaryText : variant === "ghost" ? colors.muted : colors.text },
+      ]}
+    >
+      {title}
+    </Text>
+  );
   return (
     <Pressable
       accessibilityRole="button"
       disabled={isDisabled}
       style={({ pressed }) => [
         styles.button,
-        variant === "primary" && { backgroundColor: colors.primary },
         variant === "danger" && { backgroundColor: colors.danger },
         variant === "outline" && {
           borderWidth: 1,
           borderColor: colors.border,
           backgroundColor: colors.card,
         },
-        (pressed || isDisabled) && { opacity: 0.6 },
+        variant === "primary" && { overflow: "hidden", padding: 0 },
+        (pressed || isDisabled) && { opacity: 0.7 },
       ]}
       {...props}
     >
-      {loading ? (
-        <ActivityIndicator
-          color={variant === "primary" || variant === "danger" ? "#fff" : colors.text}
-        />
-      ) : (
-        <Text
-          style={[
-            styles.buttonText,
-            {
-              color:
-                variant === "primary" || variant === "danger" ? colors.primaryText : colors.text,
-            },
-          ]}
+      {variant === "primary" ? (
+        <LinearGradient
+          colors={gradient}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
+          style={styles.gradientFill}
         >
-          {title}
-        </Text>
+          {label}
+        </LinearGradient>
+      ) : (
+        label
       )}
     </Pressable>
+  );
+}
+
+/** Big gradient banner used at the top of main screens. */
+export function Hero({
+  eyebrow,
+  title,
+  subtitle,
+  children,
+}: {
+  eyebrow?: string;
+  title: string;
+  subtitle?: string;
+  children?: React.ReactNode;
+}) {
+  return (
+    <LinearGradient
+      colors={gradient}
+      start={{ x: 0, y: 0 }}
+      end={{ x: 1, y: 1 }}
+      style={styles.hero}
+    >
+      {eyebrow && <Text style={styles.heroEyebrow}>{eyebrow}</Text>}
+      <Text style={styles.heroTitle}>{title}</Text>
+      {subtitle && <Text style={styles.heroSubtitle}>{subtitle}</Text>}
+      {children}
+    </LinearGradient>
+  );
+}
+
+/** Coloured circle with initials. */
+export function Avatar({ name, size = 44 }: { name: string; size?: number }) {
+  const initials = name
+    .split(/\s+/)
+    .map((w) => w[0])
+    .join("")
+    .slice(0, 2)
+    .toUpperCase();
+  return (
+    <LinearGradient
+      colors={gradient}
+      style={{
+        width: size,
+        height: size,
+        borderRadius: size / 2,
+        alignItems: "center",
+        justifyContent: "center",
+      }}
+    >
+      <Text style={{ color: "#fff", fontWeight: "800", fontSize: size / 2.6 }}>{initials}</Text>
+    </LinearGradient>
   );
 }
 
@@ -205,7 +265,7 @@ export function ErrorText({ message }: { message?: string | null }) {
 const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: colors.background },
   content: { padding: spacing.lg, gap: spacing.md },
-  title: { fontSize: 22, fontWeight: "700", color: colors.text },
+  title: { fontSize: 24, fontWeight: "800", color: colors.text, letterSpacing: -0.4 },
   body: { fontSize: 15, color: colors.text, lineHeight: 21 },
   card: {
     backgroundColor: colors.card,
@@ -214,15 +274,33 @@ const styles = StyleSheet.create({
     borderColor: colors.border,
     padding: spacing.lg,
     gap: spacing.sm,
+    ...shadow,
   },
   button: {
-    height: 48,
+    height: 50,
     borderRadius: radius.sm,
     alignItems: "center",
     justifyContent: "center",
     paddingHorizontal: spacing.lg,
   },
-  buttonText: { fontSize: 15, fontWeight: "600" },
+  gradientFill: {
+    flex: 1,
+    alignSelf: "stretch",
+    alignItems: "center",
+    justifyContent: "center",
+    paddingHorizontal: spacing.lg,
+  },
+  buttonText: { fontSize: 15, fontWeight: "700" },
+  hero: { borderRadius: radius.lg, padding: spacing.xl, gap: spacing.xs },
+  heroEyebrow: {
+    color: "rgba(255,255,255,0.85)",
+    fontSize: 12,
+    fontWeight: "700",
+    textTransform: "uppercase",
+    letterSpacing: 1,
+  },
+  heroTitle: { color: "#fff", fontSize: 26, fontWeight: "800" },
+  heroSubtitle: { color: "rgba(255,255,255,0.9)", fontSize: 14, lineHeight: 20 },
   label: { fontSize: 13, fontWeight: "600", color: colors.text },
   hint: { fontSize: 12, color: colors.muted },
   input: {
@@ -239,8 +317,8 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: colors.border,
     borderRadius: radius.pill,
-    paddingHorizontal: spacing.md,
-    paddingVertical: 6,
+    paddingHorizontal: 14,
+    paddingVertical: 8,
     backgroundColor: colors.card,
   },
   badge: {

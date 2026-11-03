@@ -1,0 +1,28 @@
+{
+  "cli": {
+    "version": ">= 16.0.0",
+    "appVersionSource": "remote"
+  },
+  "build": {
+    "development": {
+      "developmentClient": true,
+      "distribution": "internal"
+    },
+    "preview": {
+      "distribution": "internal",
+      "android": { "buildType": "apk" },
+      "env": {
+        "EXPO_PUBLIC_SUPABASE_URL": "https://sljbmhxnrlklfldxxwgq.supabase.co",
+        "EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY": "sb_publishable_4d6j0dFkeHr4QnBF6j7KXw_Nfanp9ye",
+        "EXPO_PUBLIC_API_URL": "https://REPLACE-WITH-VERCEL-PRODUCTION-URL",
+        "EXPO_PUBLIC_ENABLE_PASSWORD_LOGIN": "true"
+      }
+    },
+    "production": {
+      "autoIncrement": true
+    }
+  },
+  "submit": {
+    "production": {}
+  }
+}
